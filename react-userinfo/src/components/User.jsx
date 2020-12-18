@@ -1,90 +1,61 @@
 /* This component is used to render the list of all users using the API URL*/
 
-import React, {Component} from 'react'
+import React,{ useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-
-export default class User extends Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-          error: null,
-          isLoaded: false,
-          items: [],
-         
-        };
-      }
-    
-      componentDidMount() {
-        
-        var apiURL = "https://jsonplaceholder.typicode.com/users";
-        fetch(`${apiURL}`)
-          .then(res => res.json())
-          .then(
-            (result) => {
-              this.setState({
-                isLoaded: true,
-                items: result
-              });
-              console.log(JSON.stringify(result))
-            },
-            (error) => {
-              this.setState({
-                isLoaded: true,
-                error
-              });
-            }
-          )
-      }
+var apiURL = "https://jsonplaceholder.typicode.com/users";
 
 
+export default function User () {
+  
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [items, setItems] = useState(null);
 
-/* This function will return the Initial Letters as Capital letter
- for each Words in a string of words*/
-
-getInitials = (fullName) => {
-    
-    var initials = "";
-    var splitName = fullName.split(' ');
-    for (var i = 0; i < splitName.length; i++) {
-        if(splitName[i] !=="Mrs." && splitName[i] !=="Mr." && splitName[i] !=="Ms."){
-        initials = initials+splitName[i].charAt(0).toUpperCase();
+  async function fetchUserInfo()
+{
+  await fetch(`${apiURL}`)
+  .then(res => res.json())
+  .then(
+    (result) => {
+      setIsLoaded(true);
+      setItems(result);
+      console.log(JSON.stringify(result))
+    },
+    (error) => {
+      setIsLoaded(true);
+      setError(error);
     }
-     }
-     return initials;
-  }
+  )
 
+}
+  useEffect(() => fetchUserInfo());
 
-  render() {
-    const { error, isLoaded, items } = this.state;
     if (error) {
       return <div>Error: {error.message}</div>;
     } else if (!isLoaded) {
       return <div>Loading...</div>;
-    } else {
+    } else if(items === null) {
+      return <div>Loading...</div>;
+    }
+    else{
       return (
         <div className="parentDiv">
         
 <header>
   <h2>Users</h2>
 </header>
-
 <section>
-  <nav>
-  
- </nav>
-  
+  <nav></nav>
   <article>
   <div className="flex-container">
-    {items.map(item => {
-
-    var initials = this.getInitials(item.name);
-   
+    {
+    (items !==null && items.length > 0) ? 
+    
+      items.map(item => {
+  var initials = getInitialLetters(item.name); 
     return(
-       
-  <div key={item.id}> 
-  <Link to={{
-  pathname: '/userInfo',
+       <div key={item.id}> 
+  <Link to={{ pathname: '/userInfo',
   state: {
     prevRoute: "/users",
     userDetails: item
@@ -97,23 +68,35 @@ getInitials = (fullName) => {
   </Link>
   </div>
   
-) })}
+) })
+ : <div> No users available.</div>
+    
+  }
 
-</div>
-
-    </article>
+</div></article>
 </section>
 
 <footer>
   <p></p>
 </footer>
 
-
-
 </div>
      
       );
     }
+  
+}
+/* This function will return the Initial Letters as Capital letter
+ for each Words in a string of words*/
+
+ function getInitialLetters(fullName) {
+  var initials = "";
+  var splitName = fullName.split(' ');
+  for (var i = 0; i < splitName.length; i++) {
+      if(splitName[i] !=="Mrs." && splitName[i] !=="Mr." && splitName[i] !=="Ms."){
+      initials = initials+splitName[i].charAt(0).toUpperCase();
   }
+   }
+   return initials;
 }
 
